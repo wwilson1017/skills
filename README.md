@@ -7,7 +7,7 @@ Skills for Claude Code and other agents that read `SKILL.md` folders. One skill 
 A grill is the interview an agent runs before it builds anything: map the decisions, recommend an answer for each, settle them with you. `grill-me-page` runs a round of that grill as one web page you answer in a single sitting, on a laptop or a phone, instead of one question at a time in chat. Every question has a ★ recommendation and a plain-English why, pre-set options where they help and a box for your own words where they do not, a notes box, and a mockup or diagram when a picture explains it; press Go and the answers land back in the session by themselves, and the next round rebuilds the same page with your answers locked and only the questions they opened. The example in `skills/grill-me-page/example/` is a six-question grill about a break-room lunch board, with its round 2.
 
 Live demo of the example: https://tennesseecheesecake.com/teach/grill-me-page/demo/
-The lesson, with screenshots and the story of how it came about: https://tennesseecheesecake.com/teach/grill-me-page/
+The lesson, with screenshots and the story of how it came about: https://tennesseecheesecake.com/teach/grill-me-page/the-grill-me-page.html
 
 ### Install
 

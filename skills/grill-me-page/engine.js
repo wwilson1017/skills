@@ -219,7 +219,7 @@ function nameRestore(){
 // The ★ rule, shared with build.py's locked table: ★ is implied only when nothing is picked AND nothing is
 // written. An answer in the person's own words stands on its own; a pick plus words shows both.
 function summaryText(st){
-  const lines = [`${PAGE} v${VERSION} answers — ${new Date().toLocaleString()}` + (st.name ? ` — ${st.name}` : ''), ''];
+  const lines = [`${PAGE} v${VERSION} answers · ${new Date().toLocaleString()}` + (st.name ? ` · ${st.name}` : ''), ''];
   for (const q of Q){
     const a = st.answers[q.id];
     const label = v => (q.o.find(o => o[0] === v) || [v, v])[1];

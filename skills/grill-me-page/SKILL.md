@@ -1,6 +1,6 @@
 ---
 name: grill-me-page
-description: Run a grill (an interview that stress-tests a plan or design) as one web page the person answers in a single sitting, instead of one question at a time in chat. Each question gets a recommended answer marked ★, a plain-English why, optional pre-set options, a box for an answer in the person's own words, a notes box, and a mockup or diagram where a picture explains it. A page holds one round: the decisions that can be settled now. Answers come back to the session by themselves when a collector runs beside the page, or as text to paste when it does not. Use when someone says "grill me on a page", "make it a page I can answer", "question page", "send these questions to X", or when a grill would run more than a handful of questions.
+description: "Run a grill (an interview that stress-tests a plan or design) as one web page the person answers in a single sitting, instead of one question at a time in chat. Each question gets a recommended answer marked ★, a plain-English why, optional pre-set options, a box for an answer in the person's own words, a notes box, and a mockup or diagram where a picture explains it. A page holds one round: the decisions that can be settled now. Answers come back to the session by themselves when a collector runs beside the page, or as text to paste when it does not. Use when someone says 'grill me on a page', 'make it a page I can answer', 'question page', 'send these questions to X', or when a grill would run more than a handful of questions."
 disable-model-invocation: true
 ---
 

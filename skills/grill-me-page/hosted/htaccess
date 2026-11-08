@@ -1,0 +1,5 @@
+Options -Indexes
+Header set X-Robots-Tag "noindex, nofollow"
+<Files answers.jsonl>
+  Require all denied
+</Files>

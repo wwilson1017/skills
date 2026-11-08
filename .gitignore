@@ -1,0 +1,7 @@
+.DS_Store
+**/answers.jsonl
+**/ack-received.json
+**/ack-applied.json
+**/watch-alive.json
+skills/grill-me-page/example/index.html
+skills/grill-me-page/example/round2/index.html

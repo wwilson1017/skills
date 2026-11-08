@@ -1,0 +1,22 @@
+{
+  "name": "wwilson1017-skills",
+  "owner": {
+    "name": "Will Wilson",
+    "url": "https://github.com/wwilson1017"
+  },
+  "description": "Will Wilson's skills for Claude Code, starting with grill-me-page.",
+  "plugins": [
+    {
+      "name": "grill-me-page",
+      "source": "./",
+      "description": "Run a grill as one web page answered in a single sitting, with ★ recommendations, mockups, own-words answers and a collector that returns the answers to the session.",
+      "category": "productivity",
+      "keywords": [
+        "grilling",
+        "planning",
+        "interview",
+        "questionnaire"
+      ]
+    }
+  ]
+}

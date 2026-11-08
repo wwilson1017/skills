@@ -1,0 +1,22 @@
+{
+  "name": "grill-me-page",
+  "version": "1.0.0",
+  "description": "Run a grill (a plan-sharpening interview) as one web page answered in a single sitting: ★ recommendations, plain-English whys, mockups, own-words answers, and a collector that brings the answers back to the session.",
+  "author": {
+    "name": "Will Wilson",
+    "url": "https://github.com/wwilson1017"
+  },
+  "homepage": "https://tennesseecheesecake.com/teach/grill-me-page/",
+  "repository": "https://github.com/wwilson1017/skills",
+  "license": "MIT",
+  "keywords": [
+    "grilling",
+    "planning",
+    "interview",
+    "questionnaire",
+    "skills"
+  ],
+  "skills": [
+    "./skills/grill-me-page"
+  ]
+}

@@ -1,0 +1,52 @@
+<template id="vis-signin">
+<div class="cols2">
+  <div class="colcard"><h4>Tap your name <span class="pill built">★</span></h4>
+    <div class="screen"><div class="screen-bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span> Who's ordering?</div>
+      <div class="screen-body" style="display:flex;flex-wrap:wrap;gap:6px">
+        <span class="pill">Ana R.</span><span class="pill">Ben T.</span><span class="pill">Carla M.</span><span class="pill">Dev P.</span><span class="pill">Eli S.</span><span class="pill">+ 37 more</span>
+      </div></div></div>
+  <div class="colcard"><h4>Scan your badge</h4>
+    <ul><li>Needs a reader on the tablet.</li><li>A forgotten badge means no lunch order.</li><li>Stops people ordering under someone else's name.</li></ul></div>
+</div>
+<p class="vis-cap">Made-up names.</p>
+</template>
+
+<template id="vis-order">
+<div class="screen"><div class="screen-bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span> Lunch board · Ana R.</div>
+  <div class="screen-body">
+    <div class="mock-h">Tomorrow, Tuesday</div>
+    <div class="small muted">Closes at 9:30 · 31 orders so far</div>
+    <div class="mock-tabs"><span class="on">Sandwiches</span><span>Salads</span><span>Soup</span><span>Drinks</span></div>
+    <div class="queue">
+      <div class="qrow"><span class="grow"><b>Same as last time</b> · Turkey club, chips, iced tea</span><span class="act">Order</span></div>
+      <div class="qrow"><span class="grow">Turkey club</span><span>$8.50</span><span class="act">Pick</span></div>
+      <div class="qrow"><span class="grow">Veggie wrap</span><span>$7.75</span><span class="act">Pick</span></div>
+      <div class="qrow"><span class="grow">Chicken salad sandwich</span><span>$8.00</span><span class="act">Pick</span></div>
+    </div>
+  </div></div>
+<p class="vis-cap">One screen, option ★. Made-up menu and prices.</p>
+</template>
+
+<template id="vis-timeline">
+<div style="overflow-x:auto"><div class="timeline">
+  <div class="tl-track" style="grid-template-columns:3.4fr 1fr 1.2fr">
+    <div class="tl-seg" style="background:var(--good-soft)"><b>Ordering open</b>from 6:00</div>
+    <div class="tl-seg" style="background:var(--warn-soft)"><b>Fix-up</b>30 min</div>
+    <div class="tl-seg" style="background:var(--info-soft)"><b>Café cutoff</b>10:00</div>
+  </div>
+  <div class="tl-marks" style="grid-template-columns:3.4fr 1fr 1.2fr"><span>6:00</span><span>9:30 ★ board closes</span><span>10:00</span></div>
+</div></div>
+</template>
+
+<template id="vis-flow">
+<div class="flow">
+  <div class="node"><b>People order</b><small>on the tablet, until 9:30</small></div>
+  <div class="arrow">→</div>
+  <div class="node new"><b>Board closes</b><small>9:30, one combined order</small></div>
+  <div class="arrow">→</div>
+  <div class="node new"><b>E-mail to the café</b><small>sent by the board</small></div>
+  <div class="arrow">→</div>
+  <div class="node ext"><b>Café confirms</b><small>reply goes to the office manager</small></div>
+</div>
+<div class="legend"><span class="pill new">new</span><span class="pill info">outside: the café</span></div>
+</template>

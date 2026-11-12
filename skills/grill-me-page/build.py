@@ -21,6 +21,11 @@ HERE = Path(__file__).resolve().parent
 MARKER = "ANSWERS JSON (for the next round):"
 
 
+def grill_audience(audience):
+    """Who answers this page. An omitted --audience means Will, not a staff name."""
+    return audience or "will"
+
+
 def load_record(path: str) -> dict:
     text = Path(path).read_text()
     if MARKER in text:
@@ -78,7 +83,7 @@ def main():
     ap.add_argument("--issue", help="an issue number this page unblocks, kept in a meta tag")
     a = ap.parse_args()
     dash = (HERE / "dashboard.url").read_text().strip() if (HERE / "dashboard.url").exists() else ""   # an optional "all your pages" link
-    meta = (f'<meta name="grill-audience" content="{html.escape(a.audience or "owner")}">'
+    meta = (f'<meta name="grill-audience" content="{html.escape(grill_audience(a.audience))}">'
             + (f'\n<meta name="description" content="{html.escape(a.what)}">' if a.what else "")
             + (f'\n<meta name="grill-issue" content="{html.escape(a.issue)}">' if a.issue else ""))
     dashlink = (f'<a class="dash" href="{html.escape(dash)}">All <span class="long">your </span>pages →</a>'

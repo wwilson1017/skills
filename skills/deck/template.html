@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Deck title</title>
+<style>
+  /* ---- Neutral defaults: high contrast, system fonts, adaptable layouts ---- */
+  :root { --bg:#17191c; --ink:#f5f6f7; --muted:#aeb6c0; --accent:#85c7ff;
+          --box:#17191c;
+          --font:system-ui,-apple-system,"Segoe UI",sans-serif; --hand:system-ui,sans-serif }
+
+  body.light { --bg:#f5f6f7; --ink:#20252b; --muted:#59636e; --accent:#185a91; --box:#f5f6f7 }   /* light palette for bright rooms */
+
+  /* ---- engine: a fixed 1600x900 stage scaled to fit any screen, one <section> visible at a time ---- */
+  * { box-sizing:border-box }
+  html, body { height:100%; margin:0; overflow:hidden; background:var(--bg); color:var(--ink); font-family:var(--font); font-weight:700 }
+  #stage { position:absolute; left:50%; top:50%; width:1600px; height:900px; transform:translate(-50%,-50%) scale(var(--s,1)) }
+  section { position:absolute; inset:0; padding:90px 110px; display:none; flex-direction:column; justify-content:center; align-items:flex-start; overflow:hidden; background:var(--bg) }
+  section.on { display:flex }
+  .step { opacity:0; transition:opacity .2s } .step.shown { opacity:1 }
+  .swap > .step:not(.shown), .swap > :has(~ .step.shown) { display:none }   /* in a .swap, each reveal REPLACES what came before */
+  aside.notes { display:none }                       /* speaker notes live in the source only */
+  body.blank { background:#000 } body.blank #stage, body.blank nav { visibility:hidden }
+  nav { position:fixed; right:14px; bottom:12px; display:flex; gap:6px; align-items:center; color:#777; font:500 13px system-ui; transition:opacity .3s }
+  nav button { font:inherit; font-size:20px; line-height:1; color:inherit; background:none; border:1px solid #333; border-radius:6px; padding:4px 12px; cursor:pointer }
+  body.idle { cursor:none } body.idle nav { opacity:0 }   /* no chrome while presenting; move the mouse to get the buttons */
+
+  /* review aid: a big slide number. On while <body> has class "numbered"; press N to toggle; delete the class to ship without it */
+  body.numbered.idle nav { opacity:1 } body.numbered.idle nav button { opacity:0 }
+  body.numbered #num { position:fixed; left:14px; bottom:12px; font:700 30px/1 system-ui,sans-serif; color:#fff; background:#c8102e; padding:7px 14px; border-radius:8px }
+
+  /* ---- type: large type for a presentation canvas; adapt to the brief ---- */
+  h1 { font-size:100px; line-height:1.08; letter-spacing:-.02em; margin:0; max-width:1250px }
+  h2 { font-size:68px; line-height:1.12; letter-spacing:-.015em; margin:0; max-width:1250px }
+  p { font-size:44px; line-height:1.25; margin:24px 0 0 }
+  h1 + h1, h2 + h2 { margin-top:36px }
+  em { font-style:normal; color:var(--accent) } .muted { color:var(--muted) } a { color:inherit }
+  blockquote { margin:0; font-size:64px; line-height:1.15; max-width:1150px } cite { display:block; margin-top:28px; font-size:36px; font-style:normal; color:var(--muted) }
+
+  /* ---- layouts ---- */
+  .center { align-items:center; text-align:center }
+  section.photo { padding:0 } section.photo > img, section.photo > video, section.photo > iframe { width:100%; height:100%; object-fit:cover; border:0 }
+  section.fit > img, section.fit > video { object-fit:contain }                          /* whole picture on black (portraits, documents, book covers) */
+  .label { position:absolute; left:40px; top:36px; max-width:1100px } .label.br { left:auto; top:auto; right:40px; bottom:36px }                   /* words on a photo sit in black boxes */
+  .label span, .boxed { background:var(--box); padding:.04em .22em; box-decoration-break:clone; -webkit-box-decoration-break:clone }
+  .collage { position:absolute; inset:0; display:grid; gap:6px; grid-auto-flow:column; grid-auto-columns:1fr } .collage img, .collage video { width:100%; height:100%; object-fit:cover; min-height:0 }
+  .collage.two-rows { grid-auto-flow:row; grid-template-columns:1fr 1fr }
+  section.split { display:none; grid-template-columns:1fr 1fr; gap:60px; align-items:center } section.split.on { display:grid } .split img { width:100%; max-height:720px; object-fit:contain }
+  .note { position:absolute; font:700 64px/1 var(--hand); color:#fff3c4; transform:rotate(-3deg); text-shadow:0 2px 12px #000 } body.light .note { color:var(--ink); text-shadow:none }   /* annotation; place with style="left:..;top:.." */
+  .card { background:#fff; color:#111; border-radius:6px; padding:36px; align-self:center; max-width:100%; max-height:100% }     /* charts live on a white card */
+  .callout { font-size:150px; line-height:1 }
+
+  /* slides rebuilt from an original Google Slides deck by tools/pptx2slides.py: every element sits at its original position */
+  section.abs { padding:0 } .abs .el { position:absolute; margin:0 } .abs .out { transition:opacity .2s } section:has(.step.shown) .out { opacity:0 }
+
+  @media print {                                     /* Cmd+P -> Save as PDF gives a one-slide-per-page handout */
+    @page { size:1600px 900px; margin:0 }
+    html, body { height:auto; overflow:visible } #stage { position:static; transform:none; height:auto }
+    section, section.split { display:flex !important; position:relative; width:1600px; height:900px; break-after:page }
+    section.split { display:grid !important }
+    .step { opacity:1 } nav { display:none }
+    * { -webkit-print-color-adjust:exact; print-color-adjust:exact }
+  }
+</style>
+</head>
+<body class="idle">
+<div id="stage">
+
+  <!-- 1. The title IS the thesis. -->
+  <section>
+    <h1>A Clearer Way to Present</h1>
+    <h1>One Idea at a Time.</h1>
+    <aside class="notes">Speaker notes go in an aside. They never render. The story lives here, not on the slide.</aside>
+  </section>
+
+  <!-- 2. The frame: three beats, revealed one at a time. -->
+  <section>
+    <h1 class="step">Show the Question.</h1>
+    <h1 class="step">Explain the Evidence.</h1>
+    <h1 class="step">Choose the Next Step.</h1>
+  </section>
+
+  <!-- 3. Full-bleed photo placeholder. -->
+  <section class="photo"><img alt="" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 9'%3E%3Crect width='16' height='9' fill='%23555'/%3E%3Ctext x='8' y='4.9' font-size='1' fill='%23999' text-anchor='middle' font-family='sans-serif'%3Ereal photo, full bleed%3C/text%3E%3C/svg%3E"></section>
+
+  <!-- 4. Photo with a boxed label. -->
+  <section class="photo">
+    <img alt="" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 9'%3E%3Crect width='16' height='9' fill='%23665a4a'/%3E%3C/svg%3E">
+    <h1 class="label"><span>A New Perspective.</span></h1>
+  </section>
+
+  <!-- 5. Words left, picture right, optional annotation. -->
+  <section class="split">
+    <h2>An idea.<br>A prototype.<br>A first result.</h2>
+    <img alt="" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'%3E%3Crect width='4' height='5' fill='%23705848'/%3E%3C/svg%3E">
+    <div class="note" style="right:130px; bottom:70px">Your image here</div>
+  </section>
+
+  <!-- 6. Collage: two to four photos, edge to edge. -->
+  <section class="photo"><div class="collage">
+    <img alt="" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'%3E%3Crect width='4' height='5' fill='%23444'/%3E%3C/svg%3E">
+    <img alt="" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'%3E%3Crect width='4' height='5' fill='%23666'/%3E%3C/svg%3E">
+    <img alt="" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'%3E%3Crect width='4' height='5' fill='%23555'/%3E%3C/svg%3E">
+  </div></section>
+
+  <!-- 7. One word opens a section. -->
+  <section class="center"><h1>Discovery.</h1></section>
+
+  <!-- 8. The reframe: next REPLACES the text (question -> answer). -->
+  <section class="center"><div class="swap">
+    <h1>What Comes Next?</h1>
+    <h1 class="step">Try a Small Experiment.</h1>
+  </div></section>
+
+  <!-- 9. Example chart on a white card with a callout. All values are illustrative. -->
+  <section class="split">
+    <div><h2>Example Results</h2><p class="callout step">60</p><p class="muted">Illustrative data</p></div>
+    <div class="card"><svg viewBox="0 0 400 260" width="640" role="img" aria-label="Illustrative results: 20, 30, 40, 50, 55, 60">
+      <g fill="#3979a8"><rect x="20" y="180" width="40" height="60"/><rect x="80" y="150" width="40" height="90"/><rect x="140" y="120" width="40" height="120"/><rect x="200" y="90" width="40" height="150"/><rect x="260" y="75" width="40" height="165"/><rect x="320" y="60" width="40" height="180"/></g>
+      <g font-size="13" font-family="system-ui" font-weight="600" text-anchor="middle" fill="#444"><text x="40" y="174">20</text><text x="100" y="144">30</text><text x="160" y="114">40</text><text x="220" y="84">50</text><text x="280" y="69">55</text><text x="340" y="54">60</text>
+      <text x="40" y="256">A</text><text x="100" y="256">B</text><text x="160" y="256">C</text><text x="220" y="256">D</text><text x="280" y="256">E</text><text x="340" y="256">F</text></g></svg></div>
+  </section>
+
+  <!-- 10. A quote, attributed. -->
+  <section><blockquote>“Place a short quotation here.”<cite>Speaker or source · placeholder</cite></blockquote></section>
+
+  <!-- 11. It is a web page: live demo, loaded only while this slide shows. Keep a screenshot slide as the fallback. -->
+  <section class="photo"><iframe srcdoc="<!doctype html><html lang='en'><body style='font:48px system-ui;padding:80px;background:#e5e9ed'><h1>Embedded content</h1><p>Replace this offline placeholder with an approved live demo.</p></body></html>" title="Offline iframe demo"></iframe></section>
+
+  <!-- 12. Close: call back to the opening and hand it to the audience. -->
+  <section class="center">
+    <h1>What Could You Try?</h1>
+    <p class="step">Choose one next step.</p>
+  </section>
+
+</div>
+<nav><span id="num"></span><button id="prev" aria-label="Previous slide">&#8249;</button><button id="next" aria-label="Next slide">&#8250;</button></nav>
+
+<script>
+(() => {
+  const $ = id => document.getElementById(id), stage = $('stage'), slides = [...stage.querySelectorAll('section')];
+  let i = 0;
+  const fit = () => stage.style.setProperty('--s', Math.min(innerWidth / 1600, innerHeight / 900));
+
+  function show(n, revealed) {
+    i = Math.max(0, Math.min(slides.length - 1, n));
+    slides.forEach((s, k) => {
+      s.classList.toggle('on', k === i);
+      s.querySelectorAll('iframe[data-src]').forEach(f => k === i ? f.src = f.dataset.src : f.removeAttribute('src'));
+      if (k !== i) s.querySelectorAll('video,audio').forEach(v => v.pause());
+    });
+    slides[i].querySelectorAll('.step').forEach(e => e.classList.toggle('shown', !!revealed));
+    history.replaceState(null, '', '#' + (i + 1));          // F5 on a clicker reloads onto the same slide
+    $('num').textContent = (i + 1) + ' / ' + slides.length;
+  }
+  function next() { const s = slides[i].querySelector('.step:not(.shown)'); if (s) s.classList.add('shown'); else if (i < slides.length - 1) show(i + 1); }
+  function prev() { const s = [...slides[i].querySelectorAll('.step.shown')].pop(); if (s) s.classList.remove('shown'); else if (i > 0) show(i - 1, true); }
+
+  // Clickers are keyboards: most send PageDown/PageUp, some arrows, and "." for the blank-screen button.
+  addEventListener('keydown', e => {
+    const k = e.key, t = e.target;
+    if (e.metaKey || e.ctrlKey || e.altKey || t.closest('input,textarea,select,[contenteditable]')) return;
+    if ((k === ' ' || k === 'Enter') && t.closest('a,button,summary')) return;
+    if (['ArrowRight', 'ArrowDown', 'PageDown', ' ', 'Enter'].includes(k)) next();
+    else if (['ArrowLeft', 'ArrowUp', 'PageUp', 'Backspace'].includes(k)) prev();
+    else if (k === 'Home') show(0);
+    else if (k === 'End') show(slides.length - 1, true);
+    else if (k === '.' || k === 'b' || k === 'B') document.body.classList.toggle('blank');
+    else if (k === 'n' || k === 'N') document.body.classList.toggle('numbered');
+    else if (k === 'f' || k === 'F') document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen();
+    else return;
+    e.preventDefault();
+  });
+  $('next').onclick = next; $('prev').onclick = prev;
+
+  let x0; // swipe on phones and tablets
+  addEventListener('touchstart', e => x0 = e.touches[0].clientX, { passive: true });
+  addEventListener('touchend', e => { const d = e.changedTouches[0].clientX - x0; if (Math.abs(d) > 50) d < 0 ? next() : prev(); }, { passive: true });
+
+  let idle; // cursor and nav stay hidden until the mouse moves
+  addEventListener('mousemove', () => { document.body.classList.remove('idle'); clearTimeout(idle); idle = setTimeout(() => document.body.classList.add('idle'), 2500); });
+
+  // Self-checks, run from the console or playwright: deckCheck() -> slides whose content spills outside the stage;
+  // deckWords() -> words on each slide, for reviewing text density.
+  window.deckCheck = () => {
+    const bad = slides.flatMap((s, k) => { s.classList.add('on'); const o = !s.classList.contains('abs') && (s.scrollHeight > s.clientHeight + 1 || s.scrollWidth > s.clientWidth + 1); s.classList.toggle('on', k === i); return o ? [k + 1] : []; });
+    if (bad.length) console.warn('deck: content overflows on slide(s) ' + bad.join(', '));
+    return bad;
+  };
+  window.deckWords = () => slides.map(s => { const c = s.cloneNode(true); c.querySelectorAll('aside,svg,script').forEach(x => x.remove()); return (c.innerHTML.replace(/<[^>]*>/g, ' ').match(/\S+/g) || []).length; });
+
+  addEventListener('resize', fit);
+  addEventListener('hashchange', () => show((parseInt(location.hash.slice(1)) || 1) - 1));
+  fit(); show((parseInt(location.hash.slice(1)) || 1) - 1); document.fonts.ready.then(deckCheck);
+})();
+</script>
+</body>
+</html>

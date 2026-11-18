@@ -1,10 +1,10 @@
 {
   "name": "wwilson1017-skills",
   "owner": {
-    "name": "Will Wilson",
+    "name": "wwilson1017",
     "url": "https://github.com/wwilson1017"
   },
-  "description": "Will Wilson's skills for Claude Code, starting with grill-me-page.",
+  "description": "Skills for Claude Code: page-based interviews and browser slide decks.",
   "plugins": [
     {
       "name": "grill-me-page",
@@ -16,6 +16,18 @@
         "planning",
         "interview",
         "questionnaire"
+      ]
+    },
+    {
+      "name": "deck",
+      "source": "./skills/deck",
+      "description": "Build browser slide decks and publish to Simple Sites, open from disk or use any static host.",
+      "category": "productivity",
+      "keywords": [
+        "slides",
+        "presentations",
+        "decks",
+        "simple-sites"
       ]
     }
   ]

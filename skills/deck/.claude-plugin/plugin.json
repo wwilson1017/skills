@@ -1,0 +1,19 @@
+{
+  "name": "deck",
+  "version": "1.0.0",
+  "description": "Build browser slide decks and publish them to Simple Sites, open from disk or use any static host.",
+  "license": "MIT",
+  "keywords": [
+    "slides",
+    "presentations",
+    "decks",
+    "simple-sites"
+  ],
+  "skills": [
+    "./"
+  ],
+  "author": {
+    "name": "wwilson1017",
+    "url": "https://github.com/wwilson1017"
+  }
+}

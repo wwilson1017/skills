@@ -111,17 +111,24 @@ function apply(saved){
 
 // --- keeping the answers: this browser at once, the collector 2.5 s after the last change ---
 const keyOf = s => JSON.stringify(s);
-let localTimer = null, saveTimer = null, retryTimer = null, lastSaved = '';
+let localTimer = null, saveTimer = null, retryTimer = null, lastSaved = '', localAt = 0;
 function saveLocal(){
-  lsSet(LS_KEY, JSON.stringify({saved_at: new Date().toISOString(), sent_at: sentAt, sent_name: sentName, sent_id: sentId, state: state()}));
+  lsSet(LS_KEY, JSON.stringify({saved_at: new Date().toISOString(), edited_at: localAt, sent_at: sentAt, sent_name: sentName, sent_id: sentId, state: state()}));
 }
 function payload(final){ return Object.assign({page: PAGE, version: VERSION, final, client_id: CID, client_time: new Date().toISOString()}, state()); }
-async function post(body){
-  const r = await fetch(COLLECT, {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body)});
-  const j = await r.json(); if (!j.ok) throw new Error('not ok'); return j;
+// The collector keeps records in arrival order, so posts go one at a time: an autosave already in flight
+// when Go is pressed lands before the Go, never after it.
+let postQueue = Promise.resolve();
+function post(body){
+  const p = postQueue.then(async () => {
+    const r = await fetch(COLLECT, {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body)});
+    const j = await r.json(); if (!j.ok) throw new Error('not ok'); return j;
+  });
+  postQueue = p.catch(() => {});
+  return p;
 }
 function onChange(){
-  edits++;
+  edits++; localAt = Date.now();
   refresh();
   clearTimeout(localTimer);
   localTimer = setTimeout(() => { saveLocal(); if (!sentAt) mini(transport === 'collector' ? 'saved on this device ' + fmtT(new Date().toISOString()) : 'kept in this browser'); }, 300);
@@ -181,13 +188,12 @@ function restoreLocal(){
   if (local && local.sent_at){ sentAt = local.sent_at; sentName = local.sent_name || ''; sentId = local.sent_id || null; }
   return local;
 }
-let localAt = 0;
 function restoreRemote(){
   const e0 = edits;
   fetch(COLLECT + qs(IS_MULTI ? {client: CID} : {}), {cache: 'no-store'}).then(r => r.json()).then(rec => {
     const d = rec && rec.data; if (!sameVersion(d) || edits !== e0) return;
     const at = +new Date(d.client_time || rec.at);
-    if (at > localAt + 1000 && apply(d)){ refresh(); lastSaved = keyOf(state()); saveLocal(); mini('restored · ' + fmtT(d.client_time || rec.at)); }
+    if (at > localAt + 1000 && apply(d)){ localAt = at; refresh(); lastSaved = keyOf(state()); saveLocal(); mini('restored · ' + fmtT(d.client_time || rec.at)); }
   }).catch(() => {});
   const showSent = () => { if (sentAt) IS_MULTI || !WANT_ACKS ? showSentPlain(sentAt, sentName) : trackAcks(sentAt); };
   fetch(COLLECT + qs(Object.assign({final: 1}, IS_MULTI ? {client: CID} : {})), {cache: 'no-store'}).then(r => r.json()).then(rec => {
@@ -232,6 +238,13 @@ function summaryText(st){
   }
   if (st.my_questions) lines.push('', 'MY QUESTIONS:', st.my_questions);
   if (st.missing) lines.push('', 'MISSED / BUILD FIRST:', st.missing);
+  // Nodding along is the grill's main failure: say how much of the page was just ★.
+  const recQ = Q.filter(q => !q.none_rec && q.o.some(o => o[3]));
+  const took = recQ.filter(q => { const a = st.answers[q.id];
+    const rec = q.o.filter(o => o[3]).map(o => o[0]).sort().join('|');
+    return !a.answer && !a.note && (!a.picked.length || a.picked.slice().sort().join('|') === rec); }).length;
+  if (recQ.length) lines.push('', `TOOK ★ ON ${took} OF ${recQ.length}` + (took === recQ.length && !st.my_questions && !st.missing
+    ? ': no pushback anywhere. Worth a second look at the ones that matter most before anything is built.' : ''));
   return lines.join('\n');
 }
 const MARKER = 'ANSWERS JSON (for the next round):';
@@ -254,7 +267,7 @@ async function go(){
     $('#whoName').focus(); $('#whoName').scrollIntoView({behavior: 'smooth', block: 'center'}); return;
   }
   const btns = [$('#goTop'), $('#goBottom')]; btns.forEach(b => b.disabled = true);
-  const body = payload(true);
+  const body = payload(true), sentKey = keyOf(state());
   body.submit_id = randomId();
   body.summary_text = summaryText(body);
   body.questions = Q.map(q => ({id: q.id, t: q.t, o: q.o.map(o => [o[0], o[1], !!o[3]]), none_rec: !!q.none_rec}));
@@ -264,7 +277,7 @@ async function go(){
     box.value = body.summary_text; box.style.display = 'block'; $('#copyBtn').style.display = 'inline-block';
     try {
       const j = await post(body);
-      lastSaved = keyOf(state()); sentAt = j.at; sentName = body.name || ''; sentId = body.submit_id; saveLocal();
+      lastSaved = sentKey; sentAt = j.at; sentName = body.name || ''; sentId = body.submit_id; saveLocal();
       if (IS_MULTI || !WANT_ACKS) showSentPlain(sentAt, sentName); else trackAcks(j.at);
     } catch (e) {
       saveLocal();
@@ -373,5 +386,5 @@ document.addEventListener('visibilitychange', () => { if (document.visibilitySta
 window.addEventListener('focus', pollNow);
 window.addEventListener('pageshow', pollNow);
 // Restore after the page's own add-ons (registered earlier in the body) have wrapped state/apply.
-function start(){ const local = restoreLocal(); localAt = local && local.saved_at ? +new Date(local.saved_at) : 0; probe(); }
+function start(){ const local = restoreLocal(); localAt = !local ? 0 : local.edited_at != null ? +local.edited_at : local.saved_at ? +new Date(local.saved_at) : 0; probe(); }
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();

@@ -15,7 +15,7 @@ This skill puts a round on one page. The person reads it top to bottom, keeps yo
 ## 1. Do the grill yourself first
 
 - Map the **design tree** the way `grill-me` does: every decision branches into the decisions that hang off it.
-- **Find facts by looking, never by asking.** Read the code, query the data read-only, check the issues and docs. Only real decisions go on the page.
+- **Find facts by looking, never by asking.** Read the code, query the data read-only, check the issues and docs. Only real decisions go on the page. Research that takes a while does not hold up the round: hand it to a sub-agent with a fresh context, build the page from everything else, and put the questions that wait on it in `NEXT` (e.g. `'Rounding rule (waiting on research: how invoices round today)'`). Fold the finding into the next round.
 - **A page is one round: the frontier.** The frontier is every decision whose prerequisites are already settled. A question whose answer depends on another question still open on this page belongs to the next round, not this one. List those deferred topics in `NEXT` as topics, not as questions with options, and the page shows them as "Waiting on your answers".
 - **The stop rule.** When an answer would open more than a handful of new decisions, or you reach anything you cannot settle by reading code or data, stop. Build the round with what you have, hand it over and wait. Never fill a gap with a guess to keep going, and never try to put the whole tree on one page. If the goal is too unclear to form a frontier at all, ask in chat first.
 - **Every question gets a recommendation (★) and a "why" of 1 to 3 plain sentences** with the real numbers behind it. Word the question so taking ★ means "yes". Options are 2 to 4 mutually exclusive choices, each a short label plus an optional one-line consequence. Options are a shortcut, not a fence: every card also has a box for an answer in the person's own words.
@@ -102,7 +102,8 @@ The record is `<dir>/answers-v<N>.json` (the collector's `{at, data}` envelope) 
 - `none_rec` and both empty: none.
 
 Then:
-1. Check every "double-check that" or "are you sure" in the notes against the code or data before you write round 2.
+1. Check every "double-check that" or "are you sure" in the notes against the code or data before you write round 2. Then check the round's answers against each other: questions on one page were meant to be independent, but if one answer should have changed another, reopen that branch in round 2 and say why.
+   The summary ends with `TOOK ★ ON x OF y`. All ★ with no notes or questions usually means nodding along, not agreement: in round 2, pick the two or three decisions that are hardest to undo and ask them again from a different angle (a consequence, a cost, an edge case).
 2. Recompute the frontier. Round 2 has the locked table (`--locked`), your answers to their notes and questions (draw where it helps), and only the questions their answers unblocked. Anything still blocked stays in `NEXT`. Bump `VERSION` and rebuild into the same file, so the person just reloads. The collector serves the file from disk, so `serve` keeps running across rounds.
 3. Tell the page you have acted on it, so the person sees "All applied":
    ```bash
@@ -110,7 +111,7 @@ Then:
    ```
    `--record` is the file `watch` wrote; the ack carries that record's `submit_id`, so a later Send again never lights up on an old ack.
 4. Start `watch` again for the new version, and wait.
-5. When no questions are left, the grill is done. Write the decisions down (a short brief or the plan) before anyone builds.
+5. When no questions are left, run one last round: a single card that lists every decision in plain English and asks "Is this what we agreed?" (★ yes; options for "mostly, see notes" and "no, reopen"). The grill is done when the person confirms, not when the questions run out. Then write the decisions down (a short brief or the plan) before anyone builds.
 
 ## Several people answering
 

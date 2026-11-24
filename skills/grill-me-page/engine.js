@@ -232,6 +232,13 @@ function summaryText(st){
   }
   if (st.my_questions) lines.push('', 'MY QUESTIONS:', st.my_questions);
   if (st.missing) lines.push('', 'MISSED / BUILD FIRST:', st.missing);
+  // Nodding along is the grill's main failure: say how much of the page was just ★.
+  const recQ = Q.filter(q => !q.none_rec && q.o.some(o => o[3]));
+  const took = recQ.filter(q => { const a = st.answers[q.id];
+    const rec = q.o.filter(o => o[3]).map(o => o[0]).sort().join('|');
+    return !a.answer && !a.note && (!a.picked.length || a.picked.slice().sort().join('|') === rec); }).length;
+  if (recQ.length) lines.push('', `TOOK ★ ON ${took} OF ${recQ.length}` + (took === recQ.length && !st.my_questions && !st.missing
+    ? ': no pushback anywhere. Worth a second look at the ones that matter most before anything is built.' : ''));
   return lines.join('\n');
 }
 const MARKER = 'ANSWERS JSON (for the next round):';

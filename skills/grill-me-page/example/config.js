@@ -1,5 +1,5 @@
 // A made-up grill: a lunch-order tablet for an office break room. Build it with
-//   python3 ../build.py . --title "Lunch Board Grill · v1" --what "Six decisions about the break-room lunch board"
+//   python3 ../build.py . --title "Lunch Board Grill · v1" --what "Two words and six decisions about the break-room lunch board"
 const PAGE = 'lunch-board', VERSION = 1;          // PAGE is stable across rounds; bump VERSION each round
 // const MULTI = true;                             // several people answer: adds a required name field
 // Topics this round cannot ask yet: they depend on the answers above and come in round 2.
@@ -9,11 +9,19 @@ const NEXT = [
   'Whether anyone pays lunch back, which decides if the cost tally (C2) matters',
 ];
 const SECTIONS = [
+  {k:'W', t:'Words first', take:'The questions below use these two words, so they are settled before anything else. Both come from the made-up GLOSSARY.md.'},
   {k:'A', t:'Who and how', take:'Keep it open to everyone and quick to start; nobody manages accounts.'},
   {k:'B', t:'The order screen', take:'One screen and an early close leave room to fix mistakes before the café\'s cutoff.'},
   {k:'C', t:'Getting it to the café', take:'The board sends the order itself; a person gets a copy, not a job.'},
 ];
 const Q = [
+  // A word card: a term for the glossary. No options to write; the engine adds "add it" (★) and "leave it out".
+  {id:'W1', s:'W', kind:'term', term:'Close', def:'The time the board stops taking orders for tomorrow.', avoid:['deadline', 'cutoff'],
+   why:'The plan talks about two different times. This is the one we choose (question B2).'},
+  // With old_def the word is already in the glossary: the card shows today's definition beside the new one, and changing it needs a reason.
+  {id:'W2', s:'W', kind:'term', term:'Cutoff', old_def:'The time lunch orders stop.', def:'The time the café stops accepting the office\'s order: 10:00. The café sets it, not us.', avoid:['close'],
+   reason:'One word covered both the board\'s time and the café\'s, which hid the half-hour buffer between them.',
+   why:'The glossary has one word for two times. Splitting them is what makes question B2 askable.'},
   {id:'A1', s:'A', t:'Who can order?', why:'About 42 people eat in on a normal day, and visitors join roughly twice a month. Keeping a staff list current costs more than the odd extra sandwich.', o:[
     ['everyone', 'Everyone on site', 'No list to keep up.', 1],
     ['staff', 'Staff only', 'Someone keeps the staff list current.']]},

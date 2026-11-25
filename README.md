@@ -1,6 +1,6 @@
 # Skills
 
-Skills for Claude Code and other agents that read `SKILL.md` folders. Two skills: page-based interviews and browser slide decks.
+Skills for Claude Code and other agents that read `SKILL.md` folders. Seven skills: page-based interviews, browser slide decks, recaps, handoffs, competing plans, unlisted share pages, and small-business site redos.
 
 ## grill-me-page
 
@@ -71,6 +71,92 @@ If SITE_SYNC refuses the size, run `python3 skills/deck/tools/shrink.py my-deck`
 ### Requirements
 
 Python 3.9+ for the helpers; no Python packages are needed. ffmpeg (including ffprobe) is needed only for the shrink helper. Node is needed only for the timeline tool, which also needs the Playwright npm package and its Chromium browser (setup in `skills/deck/iterate.md`). `playwright-cli` is optional for visual checks. The deck itself needs only a browser; local media works offline, while external embeds need a connection.
+
+## recap
+
+Refresh stale state (PRs, CI, background jobs), then report exactly four things: the goal in the requester's words, where things actually stand with evidence, what is blocked (on a person vs technically), and next steps tagged with an owner. The recap is read-only: it starts no new work.
+
+### Install
+
+```
+npx skills@latest add wwilson1017/skills
+```
+
+```text
+/plugin marketplace add wwilson1017/skills
+/plugin install recap@wwilson1017-skills
+```
+
+Then ask for a recap, or type `/recap`.
+
+## handoff
+
+Write a handoff document that lets a fresh agent continue the work, saved to the OS temporary directory rather than the workspace. The skill returns the file path plus a starter paragraph to paste into the next session. Secrets are redacted; existing artifacts are referenced, not copied.
+
+### Install
+
+```
+npx skills@latest add wwilson1017/skills
+```
+
+```text
+/plugin marketplace add wwilson1017/skills
+/plugin install handoff@wwilson1017-skills
+```
+
+Then type `/handoff`, optionally with what the next session should focus on.
+
+## plan-fresh-eyes
+
+Spawn an independent agent that sees the session's research, constraints, and decisions — but not the existing plan — and writes a competing plan. Ask which model to use first. The two plans are then compared so you can combine them.
+
+### Install
+
+```
+npx skills@latest add wwilson1017/skills
+```
+
+```text
+/plugin marketplace add wwilson1017/skills
+/plugin install plan-fresh-eyes@wwilson1017-skills
+```
+
+Then type `/plan-fresh-eyes`.
+
+## webpage
+
+Publish an unlisted Markdown or HTML page on [Simple Sites](https://simplesites.app), which is free, and update, take down, or restore it later. Pages are unlisted, not secret. Markdown is converted with `md2page.py` (markdown-to-page), a small script in the skill folder that wraps the file in a simple, printable HTML page; `simplesite.py` is what puts that HTML on the web. The account link stays in `~/.config/simplesites/link` (mode 600), the same file the `deck` skill uses.
+
+### Install
+
+```
+npx skills@latest add wwilson1017/skills
+```
+
+```text
+/plugin marketplace add wwilson1017/skills
+/plugin install webpage@wwilson1017-skills
+```
+
+Then ask for `/webpage`. Python 3 is required; `md2page.py` creates a private venv beside itself on first run to install the `markdown` package.
+
+## site-redo
+
+Take a small business from their current website to a clickable beta: an intake form the client fills in on their own time, a brief, several homepage options, then a build, review, and published beta. Client details stay in a local folder that is not a git repo. Hosting (Simple Sites, or a grill-me-page collector) is configured locally, not hard-coded to one domain.
+
+### Install
+
+```
+npx skills@latest add wwilson1017/skills
+```
+
+```text
+/plugin marketplace add wwilson1017/skills
+/plugin install site-redo@wwilson1017-skills
+```
+
+Then type `/site-redo <client>`.
+
 
 ## Licence
 

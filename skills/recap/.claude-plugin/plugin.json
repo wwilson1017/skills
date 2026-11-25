@@ -1,0 +1,18 @@
+{
+  "name": "recap",
+  "version": "1.0.0",
+  "description": "Refresh stale state, then report the goal, the verified state, what's blocked, and owner-tagged next steps. Read-only.",
+  "license": "MIT",
+  "keywords": [
+    "status",
+    "recap",
+    "handoff"
+  ],
+  "skills": [
+    "./"
+  ],
+  "author": {
+    "name": "wwilson1017",
+    "url": "https://github.com/wwilson1017"
+  }
+}

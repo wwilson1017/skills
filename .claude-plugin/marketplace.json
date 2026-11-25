@@ -4,12 +4,12 @@
     "name": "wwilson1017",
     "url": "https://github.com/wwilson1017"
   },
-  "description": "Skills for Claude Code: page-based interviews and browser slide decks.",
+  "description": "Skills for Claude Code: page-based interviews, slide decks, recaps, handoffs, competing plans, unlisted pages, and site redos.",
   "plugins": [
     {
       "name": "grill-me-page",
       "source": "./",
-      "description": "Run a grill as one web page answered in a single sitting, with ★ recommendations, mockups, own-words answers and a collector that returns the answers to the session.",
+      "description": "Run a grill as one web page answered in a single sitting, with \u2605 recommendations, mockups, own-words answers and a collector that returns the answers to the session.",
       "category": "productivity",
       "keywords": [
         "grilling",
@@ -28,6 +28,56 @@
         "presentations",
         "decks",
         "simple-sites"
+      ]
+    },
+    {
+      "name": "recap",
+      "source": "./skills/recap",
+      "description": "Refresh stale state, then report the goal, the verified state, what's blocked, and owner-tagged next steps. Read-only.",
+      "category": "productivity",
+      "keywords": [
+        "status",
+        "recap"
+      ]
+    },
+    {
+      "name": "handoff",
+      "source": "./skills/handoff",
+      "description": "Write a handoff document to the OS temp directory so a fresh agent can continue the work.",
+      "category": "productivity",
+      "keywords": [
+        "handoff",
+        "session"
+      ]
+    },
+    {
+      "name": "plan-fresh-eyes",
+      "source": "./skills/plan-fresh-eyes",
+      "description": "Spawn an independent agent to write a competing plan from session context alone, then compare both plans.",
+      "category": "productivity",
+      "keywords": [
+        "planning",
+        "fresh-eyes"
+      ]
+    },
+    {
+      "name": "webpage",
+      "source": "./skills/webpage",
+      "description": "Publish an unlisted Markdown or HTML page on Simple Sites, and update, take down, or restore it.",
+      "category": "productivity",
+      "keywords": [
+        "simple-sites",
+        "pages"
+      ]
+    },
+    {
+      "name": "site-redo",
+      "source": "./skills/site-redo",
+      "description": "Take a small business from their current website to a clickable beta.",
+      "category": "productivity",
+      "keywords": [
+        "websites",
+        "redesign"
       ]
     }
   ]

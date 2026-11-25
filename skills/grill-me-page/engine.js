@@ -31,6 +31,38 @@ const cloneVis = id => { const t = document.getElementById(id); return t ? t.con
 const fmtT = iso => new Date(iso).toLocaleTimeString([], {hour:'numeric', minute:'2-digit'});
 const qs = o => '?' + Object.entries(Object.assign({page: PAGE, version: VERSION}, o)).map(([k, v]) => k + '=' + encodeURIComponent(v)).join('&');
 const sameVersion = d => d && d.page === PAGE && String(d.version) === String(VERSION);
+
+// Word cards (kind:'term') and decision cards (kind:'adr') are ordinary questions whose two options are
+// written here, so the ★ rule, Take ★, drafts and the locked table treat them like any other card.
+const KIND = {
+  term: q => q.old_def ? [['accept', 'Change it to the new definition', '', 1], ['skip', 'Keep the current definition', '']]
+                       : [['accept', 'Add it with this definition', '', 1], ['skip', 'Leave this word out', '']],
+  adr: () => [['record', 'Record this decision', '', 1], ['skip', 'Don\'t record it', '']],
+};
+const list = v => (Array.isArray(v) ? v : String(v || '').split(',')).map(x => String(x).trim()).filter(Boolean);
+for (const q of Q) if (KIND[q.kind]) { q.o = KIND[q.kind](q); if (q.kind === 'term' && !q.t) q.t = 'Word: ' + q.term; }
+const GATES = ['Hard to reverse', 'Surprising without context', 'A real trade-off'];
+function kindBlock(q){
+  if (q.kind === 'term'){
+    const avoid = list(q.avoid).length ? `<p class="small muted">Avoid: ${esc(list(q.avoid).join(', '))}</p>` : '';
+    const now = `<div class="colcard"><h4>${esc(q.term)}${q.old_def ? ' <span class="pill new">proposed</span>' : ''}</h4>${esc(q.def)}${avoid}</div>`;
+    if (!q.old_def) return `<div class="kind">${now}</div>`;
+    return `<div class="kind cols2"><div class="colcard"><h4>${esc(q.term)} <span class="pill">today</span></h4>${esc(q.old_def)}</div>${now}</div>`
+      + (q.reason ? `<p class="small"><b>Why change it:</b> ${esc(q.reason)}</p>` : '');
+  }
+  if (q.kind === 'adr') return `<div class="kind colcard">${esc(q.text)}<ul>`
+    + GATES.map((g, i) => `<li><b>${g}:</b> ${esc((q.gates || [])[i] || '')}</li>`).join('') + '</ul></div>';
+  return '';
+}
+// What a word or decision card comes to under the ★ rule: blank or the ★ option takes it, own words rewrite
+// the definition (or the decision's text), and the second option declines it.
+function resolved(q, a){
+  const take = !a.picked.includes('skip');
+  if (q.kind === 'term') return {id: q.id, term: q.term, action: take ? 'accept' : 'skip', definition: a.answer || q.def,
+    avoid: list(q.avoid), old_definition: q.old_def || '', reason: a.reason || q.reason || ''};
+  if (q.kind === 'adr') return {id: q.id, title: q.t, record: take, text: a.answer || q.text, gates: q.gates || []};
+  return null;
+}
 function mini(text, cls){ const m = $('#saveState'); m.textContent = text; m.className = 'save' + (cls ? ' ' + cls : ''); }
 
 function render(){
@@ -46,10 +78,11 @@ function render(){
       const opts = q.o.map(([v,label,desc,rec]) =>
         `<label class="opt"><input type="${type}" name="q_${q.id}" value="${esc(v)}"${rec?' data-rec="1"':''}><span><span class="t">${esc(label)}</span>${rec?'<span class="rec">★ recommended</span>':''}${desc?`<span class="d">${esc(desc)}</span>`:''}</span></label>`).join('');
       card.innerHTML = `<div class="q-top"><span class="q-id">${esc(q.id)}</span><div style="flex:1"><h3>${esc(q.t)}</h3>${q.why?`<p class="why">${esc(q.why)}</p>`:''}</div></div>
-        <div class="visslot"></div><div class="opts">${opts}</div>
-        <label class="lbl" for="a_${esc(q.id)}">Pick an option and add to it here, or just answer in your own words</label>
-        <textarea class="answer" id="a_${esc(q.id)}" placeholder="Your answer"></textarea>
-        <textarea class="note" placeholder="Notes (optional): double-check that, why, draw it for me…" aria-label="Notes for ${esc(q.id)}"></textarea>`;
+        <div class="visslot"></div>${kindBlock(q)}<div class="opts">${opts}</div>
+        <label class="lbl" for="a_${esc(q.id)}">${{term: 'Or write the definition in your own words', adr: 'Or write the decision in your own words'}[q.kind] || 'Pick an option and add to it here, or just answer in your own words'}</label>
+        <textarea class="answer" id="a_${esc(q.id)}" placeholder="${{term: 'Your definition', adr: 'Your wording'}[q.kind] || 'Your answer'}"></textarea>
+        ${q.kind === 'term' && q.old_def ? `<textarea class="note reason" placeholder="Why change it${q.reason ? ' (optional: blank keeps the reason above)' : ' (needed to change a word already in the glossary)'}" aria-label="Reason for ${esc(q.id)}"></textarea>` : ''}
+        <textarea class="note" data-note placeholder="Notes (optional): double-check that, why, draw it for me…" aria-label="Notes for ${esc(q.id)}"></textarea>`;
       if (q.vis){ const v = document.createElement('div'); v.className = 'vis'; v.appendChild(cloneVis(q.vis)); card.querySelector('.visslot').appendChild(v); }
       el.appendChild(card);
     }
@@ -75,7 +108,8 @@ function state(){
   for (const q of Q){
     const card = document.getElementById('q-' + q.id);
     answers[q.id] = {picked: [...card.querySelectorAll('input:checked')].map(i => i.value),
-                     answer: card.querySelector('.answer').value.trim(), note: card.querySelector('.note').value.trim()};
+                     answer: card.querySelector('.answer').value.trim(), note: card.querySelector('[data-note]').value.trim()};
+    const why = card.querySelector('.reason'); if (why) answers[q.id].reason = why.value.trim();
   }
   return {answers, my_questions: $('#myQuestions').value.trim(), missing: $('#missing').value.trim(), name: IS_MULTI ? $('#whoName').value.trim() : ''};
 }
@@ -101,7 +135,8 @@ function apply(saved){
     const card = document.getElementById('q-' + q.id);
     card.querySelectorAll('input').forEach(i => { i.checked = (a.picked || []).includes(i.value); });
     card.querySelector('.answer').value = a.answer || '';
-    card.querySelector('.note').value = a.note || '';
+    card.querySelector('[data-note]').value = a.note || '';
+    const why = card.querySelector('.reason'); if (why) why.value = a.reason || '';
   }
   $('#myQuestions').value = saved.my_questions || '';
   $('#missing').value = saved.missing || '';
@@ -234,7 +269,10 @@ function summaryText(st){
     else if (a.answer) pick = '(answered in their own words)';
     else if (q.none_rec || !q.o.some(o => o[3])) pick = '(none ticked)';
     else pick = '(blank → recommendation: ' + q.o.filter(o => o[3]).map(o => o[1]).join('; ') + ')';
-    lines.push(`${q.id} ${q.t}: ${pick}` + (a.answer ? `\n    answer: ${a.answer}` : '') + (a.note ? `\n    note: ${a.note}` : ''));
+    const r = resolved(q, a); let extra = '';
+    if (r && r.action === 'accept') extra = `\n    word: ${r.term} = ${r.definition}` + (r.avoid.length ? `\n    avoid: ${r.avoid.join(', ')}` : '') + (r.reason ? `\n    reason: ${r.reason}` : '');
+    if (r && r.record) extra = `\n    decision: ${r.text}`;
+    lines.push(`${q.id} ${q.t}: ${pick}` + (a.answer ? `\n    answer: ${a.answer}` : '') + extra + (a.note ? `\n    note: ${a.note}` : ''));
   }
   if (st.my_questions) lines.push('', 'MY QUESTIONS:', st.my_questions);
   if (st.missing) lines.push('', 'MISSED / BUILD FIRST:', st.missing);
@@ -266,11 +304,18 @@ async function go(){
     status.className = 'status err'; status.textContent = 'Please type your name first, so your answers are kept under it.';
     $('#whoName').focus(); $('#whoName').scrollIntoView({behavior: 'smooth', block: 'center'}); return;
   }
-  const btns = [$('#goTop'), $('#goBottom')]; btns.forEach(b => b.disabled = true);
   const body = payload(true), sentKey = keyOf(state());
+  const all = Q.map(q => resolved(q, body.answers[q.id])).filter(Boolean);
+  const bare = all.find(r => r.action === 'accept' && r.old_definition && !r.reason);
+  if (bare){
+    status.className = 'status err'; status.textContent = `${bare.id} changes a word that is already defined ("${bare.term}"). Say why in its reason box, or keep the current definition.`;
+    const why = $(`#q-${CSS.escape(bare.id)} .reason`); why.focus(); why.scrollIntoView({behavior: 'smooth', block: 'center'}); return;
+  }
+  const btns = [$('#goTop'), $('#goBottom')]; btns.forEach(b => b.disabled = true);
+  body.terms = all.filter(r => r.term); body.adrs = all.filter(r => !r.term);
   body.submit_id = randomId();
   body.summary_text = summaryText(body);
-  body.questions = Q.map(q => ({id: q.id, t: q.t, o: q.o.map(o => [o[0], o[1], !!o[3]]), none_rec: !!q.none_rec}));
+  body.questions = Q.map(q => ({id: q.id, t: q.t, kind: q.kind || '', o: q.o.map(o => [o[0], o[1], !!o[3]]), none_rec: !!q.none_rec}));
   const box = $('#summary');
   if (transport === 'collector'){
     status.className = 'status ack sent'; status.innerHTML = '<span class="live"></span><b>Sending…</b>';

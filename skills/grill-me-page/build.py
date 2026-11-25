@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Assemble a grill-me page.
 
-    build.py <dir> --title "Title" [--locked prev-answers] [--what "one line"] [--audience Name] [--issue N]   ->  <dir>/index.html
+    build.py <dir> --title "Title" [--locked prev-answers [--written ids.json]] [--what "one line"] [--audience Name] [--issue N]   ->  <dir>/index.html
 
 <dir> holds:
   body.html     the intro: lead box, stat tiles, diagrams, answers to last round's notes.
@@ -40,9 +40,11 @@ def load_record(path: str) -> dict:
     return d
 
 
-def locked_table(d: dict) -> str:
+def locked_table(d: dict, written=()) -> str:
     """The ★ rule, shared with engine.js summaryText(): ★ is implied only when nothing is picked AND nothing is written."""
     qs, answers = d["questions"], d["answers"]
+    words = {t["id"]: t for t in d.get("terms") or [] if t.get("action") == "accept"}
+    adrs = {r["id"]: r for r in d.get("adrs") or [] if r.get("record")}
     rows = []
     for q in qs:
         a = answers.get(q["id"], {})
@@ -63,6 +65,14 @@ def locked_table(d: dict) -> str:
             answer = (html.escape(answer) + " · " if answer else "") + "<i>" + html.escape(own) + "</i>"
         else:
             answer = html.escape(answer)
+        if q["id"] in words:     # a word card: the definition as it now stands, whoever wrote it
+            w = words[q["id"]]
+            answer = (f'<b>{html.escape(w["term"])}</b>: {html.escape(w["definition"])}'
+                      + (f' <span class="small muted">Avoid: {html.escape(", ".join(w["avoid"]))}</span>' if w.get("avoid") else ""))
+            if q["id"] in written:
+                pills.append('<span class="pill built">written to glossary ✓</span>')
+        elif q["id"] in adrs:
+            answer = "Record it: " + html.escape(adrs[q["id"]]["text"])
         rows.append(f'<tr><td>{html.escape(q["id"])}</td><td>{html.escape(q["t"])} {" ".join(pills)}</td>'
                     f'<td>{answer}</td><td class="small">{html.escape(a.get("note") or "")}</td></tr>')
     extra = "".join(f'<p class="small"><b>{label}:</b> {html.escape(d[k])}</p>'
@@ -78,6 +88,7 @@ def main():
     ap.add_argument("dir")
     ap.add_argument("--title", required=True)
     ap.add_argument("--locked", help="the previous round's answers: the page's record, collect.py's envelope, or the pasted copy box")
+    ap.add_argument("--written", help="with --locked: a JSON list (or object keyed by) the ids of word cards already written to the glossary")
     ap.add_argument("--audience", default="", help="who answers, when it is not the person running the session (a first name)")
     ap.add_argument("--what", default="", help="one line saying what this page asks (the page's description meta tag)")
     ap.add_argument("--issue", help="an issue number this page unblocks, kept in a meta tag")
@@ -94,7 +105,7 @@ def main():
     if a.locked:
         if "<!--LOCKED-->" not in body:
             raise SystemExit("--locked given but body.html has no <!--LOCKED--> marker")
-        body = body.replace("<!--LOCKED-->", locked_table(load_record(a.locked)))
+        body = body.replace("<!--LOCKED-->", locked_table(load_record(a.locked), set(json.loads(Path(a.written).read_text())) if a.written else ()))
     page = (HERE / "template.html").read_text()
     for key, val in (("TITLE", html.escape(a.title)), ("META", meta), ("DASHLINK", dashlink), ("BODY", body), ("AFTER", part("after.html")),
                      ("VISUALS", part("visuals.html")), ("CONFIG", part("config.js")),

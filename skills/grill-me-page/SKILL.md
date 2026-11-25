@@ -23,6 +23,23 @@ This skill puts a round on one page. The person reads it top to bottom, keeps yo
 - **Draw where a picture explains.** A screen mockup for UI questions, a flow for processes, side-by-side cards for "option A vs B", a timeline for sequencing, a table for codes or mappings. If you use made-up amounts in a mockup, say so in its caption.
 - Lead the page with an "In plain English" box, a few stat tiles of real numbers, and a collapsible "already decided, not asked" list.
 
+## Words and decisions
+
+A grill settles vocabulary and a few lasting decisions along with the plan. This part follows Matt Pocock's `domain-modeling` skill: write them down while the grill runs, not afterwards.
+
+- **Read first.** Before round 1, read the project's `GLOSSARY.md` (and `GLOSSARY-MAP.md` if there is one) and `docs/adr/`. Use the glossary's words in every question. Where the person's wording or the code conflicts with the glossary, or one word is doing two jobs, do not pick silently: put it on the page as a word card.
+- **Word cards** (`kind:'term'`) propose one term: the word, a definition of one or two sentences saying what it is (no implementation detail), and the words to avoid. ★ is "add it"; the other option leaves it out; the own-words box is the person's own definition. With `old_def` the word is already in the glossary: the card shows today's definition beside the proposed one, and a change needs a reason (yours in `reason`, or theirs in the card's reason box; Go will not send without one).
+- **Put a word card in the earliest round whose later questions depend on the word**, usually round 1, in a first section. A question that only makes sense once the word is settled waits in `NEXT`.
+- **Decision cards** (`kind:'adr'`) ask whether to record a decision as an ADR. Offer one only when all three gates pass, and give each gate one line in `gates`, in this order: it is hard to reverse, it would surprise someone without the context, and it came from a real trade-off. Most rounds have none. They belong in the round after the decision itself is settled.
+- **On Go, write the accepted words at once.** The record has `terms` (`{id, term, action: 'accept'|'skip', definition, avoid, old_definition, reason}`, already resolved by the ★ rule: `definition` is the person's own words when they wrote any) and `adrs` (`{id, title, record, text, gates}`). Write every `accept` to `GLOSSARY.md` before building the next round, in this shape, creating the file if it is missing:
+  ```md
+  **Invoice**:
+  A request for payment sent to a customer after delivery.
+  _Avoid_: Bill, payment request
+  ```
+  List the ids you wrote in a JSON file and pass it as `--written` with `--locked`; the locked table then marks those rows "written to glossary ✓".
+- **Decisions marked to record go in the brief** as ADR candidates (title and text from `adrs`). The change that carries out the decision writes the file in `docs/adr/`, in the project's own format; a short paragraph is enough.
+
 ## 2. Write the parts
 
 Make a working folder for this grill (e.g. `grills/<slug>/`). `example/` beside this file is a complete, small grill to copy from, and `example/round2/` is its second round.
@@ -40,6 +57,11 @@ const Q = [
    ['tab',  'A tab inside Orders', '']]},
  {id:'G5', s:'G', t:'Reports in v1', multi:true, why:'Tick every one you want.', o:[ ['aging','Aging summary','',1], ['trend','Monthly trend',''] ]},
  {id:'J1', s:'J', t:'Pull anything into v1?', multi:true, none_rec:true, why:'Blank means they stay out.', o:[ ['pay_links','Pay-now links',''] ]},
+ // A word card and a decision card (see "Words and decisions"). Neither takes `o`: the engine writes the two options.
+ {id:'W1', s:'W', kind:'term', term:'Invoice', def:'A request for payment sent to a customer after delivery.', avoid:['bill'], why:'Why this word needs settling now.'},
+ {id:'W2', s:'W', kind:'term', term:'Customer', old_def:'Today\'s glossary definition.', def:'The new one.', reason:'Why it should change.', why:'...'},
+ {id:'K1', s:'K', kind:'adr', t:'Record it: invoices are never edited after sending', text:'1 to 3 sentences: the context, what was decided and why.',
+  gates:['Why it is hard to reverse.', 'Why it would surprise a later reader.', 'What the real alternative was.'], why:'...'},
 ];
 ```
 Write `why`, labels and descriptions as plain JS strings and escape apostrophes (`don\'t`). The engine HTML-escapes them. `multi:true` makes checkboxes. `none_rec:true` means a blank answer is "none", not "take ★".
@@ -92,7 +114,7 @@ Tell the person: answer it, press Go, and you will pick it up. Then stop and wai
 
 ## 4. Read the answers, run the next round
 
-The record is `<dir>/answers-v<N>.json` (the collector's `{at, data}` envelope) or the pasted text. `build.py --locked` reads either, and also a bare record. Each answer is `{picked:[values], answer, note}`, plus `my_questions`, `missing`, `summary_text` and `questions`.
+The record is `<dir>/answers-v<N>.json` (the collector's `{at, data}` envelope) or the pasted text. `build.py --locked` reads either, and also a bare record. Each answer is `{picked:[values], answer, note}`, plus `my_questions`, `missing`, `summary_text`, `questions`, and `terms` and `adrs` from any word and decision cards.
 
 **Read `picked` and `answer` together.** The ★ rule, applied the same way by the page's summary, by the locked table and by you:
 - Both empty, and not `none_rec`: they took ★.

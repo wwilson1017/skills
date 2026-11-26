@@ -25,6 +25,8 @@ This skill does not commit unless the user asked for that, and it never pushes, 
 
 Paste this into every reviewer prompt, followed by the schema.
 
+Every subagent prompt, reviewers and fix agents alike, also says: "Do not invoke /review-super or any other skill, and do not spawn agents: do this work directly." A subagent that re-runs the review skill recurses; one public review skill hit 50+ agents that way.
+
 > **Framing.** Confirm this diff is safe to merge. Report only what will actually break, misbehave, or violate a written rule. An empty report is a valid and common result. You are not rewarded for volume.
 >
 > **Confidence is one of five anchors.** `0` does not hold up · `25` could not verify from the code · `50` real but a nitpick, edge case, or taste · `75` you double-checked and can name a concrete consequence a user, caller or operator will hit · `100` provable from the code itself (type mismatch, swapped argument, quotable rule violation). Never emit 0 or 25.
@@ -79,6 +81,8 @@ codex exec --sandbox read-only -c model_reasoning_effort=high -C <repo-root> -o 
   "Review the unified diff on stdin against its task. The current directory is the whole repository: read any file, because a bug often sits where a changed thing is used. <CONTRACT> Output one JSON array in the schema." \
   < <scratch>/diff.txt
 ```
+
+Use the newest Codex model your account offers (add `-m <model>`): in one team's tests the model mattered more than the prompt. On five real bugs a same-vendor review had passed, an older Codex model found none at any effort level and the newer one found three.
 
 Allow up to 10 minutes. If Codex fails, report the error and stop; do not substitute a Claude reviewer and call it Stage 2. Otherwise read `stage2.md`, apply the gate, run the fix agent. If a P0/P1 was fixed, run Codex once more on the new diff, adding: "I made edits based on your previous review. Are my fixes correct, did I introduce new issues, what remains?"
 

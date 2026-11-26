@@ -1,0 +1,18 @@
+{
+  "name": "review-super",
+  "version": "1.0.0",
+  "description": "Two-stage code review that fixes what it finds: a fresh reviewer, then a second reviewer from another vendor (Codex) over the whole repo. Findings must quote the line that makes them true.",
+  "license": "MIT",
+  "keywords": [
+    "code-review",
+    "review",
+    "codex"
+  ],
+  "skills": [
+    "./"
+  ],
+  "author": {
+    "name": "wwilson1017",
+    "url": "https://github.com/wwilson1017"
+  }
+}

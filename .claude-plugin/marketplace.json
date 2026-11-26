@@ -4,12 +4,12 @@
     "name": "wwilson1017",
     "url": "https://github.com/wwilson1017"
   },
-  "description": "Skills for Claude Code: page-based interviews, slide decks, recaps, handoffs, competing plans, unlisted pages, and site redos.",
+  "description": "Skills for Claude Code: page-based interviews, slide decks, recaps, handoffs, competing plans, code review, unlisted pages, and site redos.",
   "plugins": [
     {
       "name": "grill-me-page",
       "source": "./",
-      "description": "Run a grill as one web page answered in a single sitting, with \u2605 recommendations, mockups, own-words answers and a collector that returns the answers to the session.",
+      "description": "Run a grill as one web page answered in a single sitting, with ★ recommendations, mockups, own-words answers and a collector that returns the answers to the session.",
       "category": "productivity",
       "keywords": [
         "grilling",
@@ -78,6 +78,17 @@
       "keywords": [
         "websites",
         "redesign"
+      ]
+    },
+    {
+      "name": "review-super",
+      "source": "./skills/review-super",
+      "description": "Two-stage code review that fixes what it finds: a fresh reviewer, then a second reviewer from another vendor (Codex) over the whole repo.",
+      "category": "development",
+      "keywords": [
+        "code-review",
+        "review",
+        "codex"
       ]
     }
   ]

@@ -1,6 +1,6 @@
 # Skills
 
-Skills for Claude Code and other agents that read `SKILL.md` folders. Seven skills: page-based interviews, browser slide decks, recaps, handoffs, competing plans, unlisted share pages, and small-business site redos.
+Skills for Claude Code and other agents that read `SKILL.md` folders. Eight skills: page-based interviews, browser slide decks, recaps, handoffs, competing plans, two-stage code review, unlisted share pages, and small-business site redos.
 
 ## grill-me-page
 
@@ -157,6 +157,30 @@ npx skills@latest add wwilson1017/skills
 
 Then type `/site-redo <client>`.
 
+
+## review-super
+
+A code review that fixes what it finds. Stage 1 is one fresh reviewer that knows nothing about how the change was built. Stage 2 is a second reader from another vendor (the Codex CLI), reading the whole repository, because two models from one family tend to miss the same things. Every finding has to quote the line that makes it true, and a quick `sed` check drops any that don't. Every finding that survives goes to a fix agent, which fixes it or refutes it with a reason. The skill never pushes, opens a PR or merges.
+
+**Install a second-vendor reviewer.** Stage 2 does most of the catching. Over about 400 PRs in one team's November 2026 runs, the second-vendor stage raised a P0/P1 on 26% of diffs, against 9% for the same-vendor first stage. Without the Codex CLI, review-super runs Stage 1 only and says so.
+
+Other numbers from the same runs:
+- Fewer than 10% of findings went unacted on.
+- An extra always-on checklist ("check sibling code paths") caught none of its target bugs in replay and added noise, so it was cut.
+- The two checks that stayed run only when they apply: an authority check when auth, permissions or agent tools change, and a deploy-overlap check when a migration changes.
+
+### Install
+
+```
+npx skills@latest add wwilson1017/skills
+```
+
+```text
+/plugin marketplace add wwilson1017/skills
+/plugin install review-super@wwilson1017-skills
+```
+
+For Stage 2: `npm i -g @openai/codex`, then sign in. Then type `/review-super` on a branch (`report-only` for findings without fixes, `full` to force Stage 2).
 
 ## Licence
 
